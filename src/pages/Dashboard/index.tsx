@@ -1,32 +1,64 @@
-import React from 'react';
+import React, { useState, FormEvent } from 'react';
 import { FiChevronRight } from 'react-icons/fi';
+import api from '../../services/api';
 
 import logo from '../../assets/logo.svg';
 
 import { Title, Form, Repositories } from './styles';
 
+interface Repository {
+  full_name: string;
+  description: string;
+  owner: {
+    login: string;
+    avatar_url: string;
+  };
+}
+
 const Dashboard: React.FC = () => {
+  const [newRepo, setNewRepo] = useState('');
+  const [repositories, setRepositories] = useState<Repository[]>([]);
+
+  async function handleAddRepository(
+    e: FormEvent<HTMLFormElement>,
+  ): Promise<void> {
+    e.preventDefault();
+
+    const reponse = await api.get<Repository>(`repos/${newRepo}`);
+
+    const repository = reponse.data;
+
+    setRepositories([...repositories, repository]);
+    setNewRepo('');
+  }
   return (
     <>
       <img src={logo} alt="" srcSet="" />
       <Title>Explore repositórios no Github</Title>
-      <Form>
-        <input type="text" placeholder="Digite o nome do repositório" />
+      <Form onSubmit={handleAddRepository}>
+        <input
+          value={newRepo}
+          onChange={e => setNewRepo(e.target.value)}
+          type="text"
+          placeholder="Digite o nome do repositório"
+        />
         <button type="submit">Pequisar</button>
       </Form>
       <Repositories>
-        <a href="teste">
-          <img
-            src="https://avatars1.githubusercontent.com/u/6005658?s=460&u=fb81da823b66c87d38d58bbfddebc571f3fc140d&v=4"
-            alt="Italo Fernandes"
-          />
-          <div>
-            <strong>Rocketseat / unform</strong>
-            <p>Performance-focused API for React forms </p>
-          </div>
+        {repositories.map(repository => (
+          <a key={repository.full_name} href="teste">
+            <img
+              src={repository.owner.avatar_url}
+              alt={repository.owner.login}
+            />
+            <div>
+              <strong>{repository.full_name}</strong>
+              <p>{repository.description}</p>
+            </div>
 
-          <FiChevronRight size="20" />
-        </a>
+            <FiChevronRight size="20" />
+          </a>
+        ))}
       </Repositories>
     </>
   );
