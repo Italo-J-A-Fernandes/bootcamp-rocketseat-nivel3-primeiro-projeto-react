@@ -1,4 +1,4 @@
-import React, { useState, FormEvent } from 'react';
+import React, { useState, useEffect, FormEvent } from 'react';
 import { FiChevronRight } from 'react-icons/fi';
 import api from '../../services/api';
 
@@ -20,14 +20,19 @@ const Dashboard: React.FC = () => {
   const [inputError, setInputError] = useState('');
   const [repositories, setRepositories] = useState<Repository[]>([]);
 
+  useEffect(() => {
+    localStorage.setItem(
+      '@GithubExplore:repositories',
+      JSON.stringify(repositories),
+    );
+  }, [repositories]);
+
   async function handleAddRepository(
     e: FormEvent<HTMLFormElement>,
   ): Promise<void> {
     e.preventDefault();
 
     const repoExist = repositories.find(repo => repo.full_name === newRepo);
-
-    console.log(repoExist);
 
     if (!newRepo) {
       setInputError('Digite o autor/nome do repositório');
